@@ -23,7 +23,106 @@ The context-progress branch uses a unique approach:
 - **No Hash Updates**: Avoids needing to update CLAUDE.md constantly
 - **Clean History**: Keeps the main branch clean from progress tracking commits
 
-## Update Progress Workflow
+## Auto-Extraction (Recommended)
+
+The auto-extraction feature automatically generates structured progress content from your git history,
+inspired by the `/compact` tool's extraction patterns.
+
+### Quick Start
+
+```bash
+# Preview what will be extracted (no changes made)
+~/.claude/plugins/context-commit/hooks/update-progress.sh --preview
+
+# Update with auto-extraction (opens editor for review)
+~/.claude/plugins/context-commit/hooks/update-progress.sh
+
+# Update without editor (for CI/automation)
+CONTEXT_SKIP_EDIT=1 ~/.claude/plugins/context-commit/hooks/update-progress.sh
+```
+
+### What Gets Auto-Extracted
+
+| Category | Description | Source |
+|----------|-------------|--------|
+| **Commits** | Categorized by type (feature, fix, test, refactor) | `git log` since last update |
+| **File Changes** | Added, modified, deleted files with stats | `git diff --name-status` |
+| **Issues Resolved** | Commits containing "fix", "resolve", etc. | Commit message parsing |
+| **Key References** | Functions, classes, structs added | Diff analysis |
+
+### Merge Modes
+
+Control how auto-extracted content merges with existing progress:
+
+```bash
+# Smart merge (default): preserve your manual "In Progress" and "Planned" edits
+CONTEXT_MERGE_MODE=smart ./update-progress.sh
+
+# Replace: use only auto-extracted content
+CONTEXT_MERGE_MODE=replace ./update-progress.sh
+
+# Append: add auto-extracted as new section
+CONTEXT_MERGE_MODE=append ./update-progress.sh
+```
+
+### Auto-Extracted Output Format
+
+```markdown
+[CONTEXT] Project Progress
+
+Auto-extracted progress as of 2026-01-12 15:30
+
+## Recent Commits
+
+### Features
+- [x] [abc1234] Add user authentication endpoint
+- [x] [def5678] Implement dark mode toggle
+
+### Fixes
+- [x] [ghi9012] Fix race condition in data loader
+
+### Tests
+- [x] [jkl3456] Add unit tests for auth module
+
+## File Changes
+
+M  src/auth/login.swift
+A  src/ui/darkmode.swift
+D  src/deprecated/oldauth.swift
+
+## Issues Resolved
+
+- [ghi9012] Fix race condition in data loader
+
+## Key Code References
+
+- src/auth/login.swift: func authenticate
+- src/ui/darkmode.swift: class ThemeManager
+
+## In Progress
+
+- [ ] (preserved from your previous edits)
+
+## Planned
+
+- [ ] (preserved from your previous edits)
+```
+
+### Standalone Extraction
+
+For programmatic use or custom workflows:
+
+```bash
+# Generate markdown output
+~/.claude/plugins/context-commit/hooks/auto-extract-progress.sh markdown
+
+# Generate JSON output
+~/.claude/plugins/context-commit/hooks/auto-extract-progress.sh json
+```
+
+## Manual Update Workflow
+
+For cases where auto-extraction isn't suitable, use manual methods:
 
 ### Method 1: Simple Amend (Recommended)
 

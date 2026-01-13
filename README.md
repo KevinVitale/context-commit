@@ -145,6 +145,39 @@ Then update CLAUDE.md to reference the commit hash.
 - Current session state (auto-captured)
 - Work-in-progress notes (mutable)
 
+## Auto-Extraction (New!)
+
+Automatically extract structured progress from git history, inspired by `/compact`:
+
+```bash
+# Preview what will be extracted
+~/.claude/plugins/context-commit/hooks/update-progress.sh --preview
+
+# Update context-progress with auto-extracted content
+~/.claude/plugins/context-commit/hooks/update-progress.sh
+
+# Non-interactive mode (for CI/automation)
+CONTEXT_SKIP_EDIT=1 ~/.claude/plugins/context-commit/hooks/update-progress.sh
+```
+
+**What gets auto-extracted:**
+
+| Category | Description |
+|----------|-------------|
+| **Commits** | Categorized by type (feature, fix, test, refactor) |
+| **File Changes** | Added, modified, deleted files |
+| **Issues Resolved** | Commits containing "fix", "resolve", etc. |
+| **Key References** | Functions, classes, structs added |
+
+**Merge modes:**
+- `smart` (default): Preserve your manual "In Progress" and "Planned" edits
+- `replace`: Use only auto-extracted content
+- `append`: Add auto-extracted as new section
+
+```bash
+CONTEXT_MERGE_MODE=replace ./update-progress.sh
+```
+
 ## Manual Progress Updates (Optional)
 
 Hooks handle this automatically. For manual control:
