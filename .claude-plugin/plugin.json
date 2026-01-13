@@ -1,0 +1,8 @@
+{
+  "name": "context-commit",
+  "version": "1.0.0",
+  "description": "Git-based context management workflow using commit messages for project documentation and progress tracking",
+  "author": {
+    "name": "Kevin Vitale"
+  }
+}

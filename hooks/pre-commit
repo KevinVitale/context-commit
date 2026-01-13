@@ -1,0 +1,101 @@
+#!/bin/bash
+# [CONTEXT] pre-commit hook
+# Enforces TDD workflow and context-progress synchronization
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+# PROTECTION: Prevent destructive commits on context-progress
+if [ "$CURRENT_BRANCH" = "context-progress" ]; then
+    # Backup context-progress before any commit
+    BACKUP_TAG="context-progress-backup-$(date +%s)"
+    git tag "$BACKUP_TAG" context-progress 2>/dev/null
+
+    # Only allow [CONTEXT] commits on context-progress
+    COMMIT_MSG_FILE=".git/COMMIT_EDITMSG"
+    if [ -f "$COMMIT_MSG_FILE" ]; then
+        COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+        if [[ ! "$COMMIT_MSG" =~ ^\[CONTEXT\] ]]; then
+            echo ""
+            echo "❌ Direct commits on context-progress must be [CONTEXT] commits"
+            echo "   Current branch: context-progress"
+            echo ""
+            echo "   This branch is for progress tracking only."
+            echo "   To make regular commits:"
+            echo ""
+            echo "   git checkout master"
+            echo "   # make your commits on master"
+            echo "   # then update context-progress via rebase + amend"
+            echo ""
+            echo "⚠️  If you accidentally switched to this branch, run:"
+            echo "   git checkout master"
+            echo ""
+            exit 1
+        fi
+    fi
+fi
+
+# Check context-progress synchronization (only on master)
+if [ "$CURRENT_BRANCH" = "master" ]; then
+    # Check if context-progress branch exists
+    if git rev-parse --verify context-progress >/dev/null 2>&1; then
+        # Count commits in master that aren't in context-progress
+        BEHIND=$(git rev-list context-progress..master --count 2>/dev/null)
+
+        if [ "$BEHIND" -gt 0 ]; then
+            echo ""
+            echo "⚠️  context-progress branch is out of date (behind by $BEHIND commits)"
+            echo ""
+
+            # Auto-update context-progress with session capture
+            HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+            if [ -x "$HOOK_DIR/capture-session.sh" ]; then
+                echo "🤖 Auto-updating context-progress with session capture..."
+                echo "   (Set CONTEXT_SESSION_PROMPT=1 for interactive mode)"
+                echo ""
+
+                # Call capture-session helper script
+                if ! "$HOOK_DIR/capture-session.sh"; then
+                    echo ""
+                    echo "❌ Session capture failed. Update manually:"
+                    echo ""
+                    echo "   git checkout context-progress"
+                    echo "   git rebase master"
+                    echo "   git commit --amend  # Update progress checklist"
+                    echo "   git checkout master"
+                    echo ""
+                    exit 1
+                fi
+                echo ""
+            else
+                echo "❌ capture-session.sh not found or not executable"
+                echo "   Update progress manually:"
+                echo ""
+                echo "   git checkout context-progress"
+                echo "   git rebase master"
+                echo "   git commit --amend  # Update progress checklist"
+                echo "   git checkout master"
+                echo ""
+                exit 1
+            fi
+        else
+            echo "✅ context-progress is synchronized"
+        fi
+    else
+        echo "⚠️  context-progress branch does not exist"
+    fi
+fi
+
+echo "🧪 Running tests with strict concurrency..."
+swift test -Xswiftc -strict-concurrency=complete
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Tests failed. Commit rejected per TDD workflow."
+    echo "   Fix failing tests before committing."
+    echo ""
+    exit 1
+fi
+
+echo "✅ All tests passed"
+exit 0

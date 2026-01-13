@@ -1,0 +1,21 @@
+{
+  "name": "context-commit-marketplace",
+  "description": "Git-based context management plugin for Claude Code",
+  "owner": {
+    "name": "Kevin Vitale"
+  },
+  "plugins": [
+    {
+      "name": "context-commit",
+      "source": "./",
+      "description": "Git-based context management workflow using commit messages for project documentation and progress tracking",
+      "version": "1.0.0",
+      "author": {
+        "name": "Kevin Vitale"
+      },
+      "repository": "https://github.com/KevinVitale/context-commit",
+      "license": "MIT",
+      "keywords": ["git", "context", "documentation", "workflow", "commit", "project-management"]
+    }
+  ]
+}

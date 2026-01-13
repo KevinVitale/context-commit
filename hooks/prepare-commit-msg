@@ -1,0 +1,38 @@
+#!/bin/bash
+# [CONTEXT] prepare-commit-msg hook
+# Auto-populates commit message templates with guidance
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Only run for regular commits (not merges, amendments, etc.)
+if [ -z "$COMMIT_SOURCE" ]; then
+    CURRENT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+    # If message is empty or just comments, offer template
+    if [[ "$CURRENT_MSG" =~ ^[[:space:]]*# ]] || [ -z "$CURRENT_MSG" ]; then
+        cat > "$COMMIT_MSG_FILE" << 'EOF'
+
+# [CONTEXT] Commit Message Guide:
+#
+# For [CONTEXT] commits (project documentation):
+#   [CONTEXT] Brief descriptive title
+#
+#   Detailed explanation of the context, workflow, or pattern.
+#   Must be at least 5 lines to pass commit-msg validation.
+#
+# For regular commits (code changes):
+#   - Use present tense: "Add feature" not "Added feature"
+#   - Be specific and concise
+#   - Reference tests added/modified per TDD workflow
+#   - All tests must pass (pre-commit hook enforces this)
+#
+# Examples:
+#   "Add 3-component query support with tests"
+#   "Implement system execution ordering"
+#   "Fix component removal race condition"
+EOF
+    fi
+fi
+
+exit 0

@@ -1,0 +1,61 @@
+#!/bin/bash
+# [CONTEXT] post-commit hook
+# Auto-generates progress.html on context-progress branch
+# Reminds to update context-progress branch after master commits
+
+# Prevent infinite loop when amending
+if [ "$CONTEXT_AMENDING_PROGRESS" = "1" ]; then
+    exit 0
+fi
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+HOOK_DIR="$(dirname "$0")"
+
+# On context-progress branch: auto-generate progress.html
+if [ "$CURRENT_BRANCH" = "context-progress" ]; then
+    COMMIT_MSG=$(git log -1 --pretty=%B)
+
+    # Only process [CONTEXT] commits
+    if [[ "$COMMIT_MSG" =~ ^\[CONTEXT\] ]]; then
+        echo ""
+        echo "📊 Auto-generating progress.html from commit message..."
+
+        # Generate progress.html
+        bash "$HOOK_DIR/generate-progress-html.sh"
+
+        # Check if progress.html was created/modified
+        if [ -f "progress.html" ]; then
+            # Stage the file
+            git add progress.html
+
+            # Check if there are changes to commit
+            if ! git diff --cached --quiet; then
+                # Amend the commit to include progress.html (set flag to prevent loop)
+                CONTEXT_AMENDING_PROGRESS=1 git commit --amend --no-edit --no-verify
+
+                echo "✅ progress.html added to commit"
+            else
+                echo "ℹ️  progress.html unchanged"
+            fi
+        fi
+        echo ""
+    fi
+fi
+
+# On master branch: remind to update context-progress
+if [ "$CURRENT_BRANCH" = "master" ]; then
+    COMMIT_MSG=$(git log -1 --pretty=%B)
+
+    # Skip reminder for [CONTEXT] commits
+    if [[ ! "$COMMIT_MSG" =~ ^\[CONTEXT\] ]]; then
+        echo ""
+        echo "📝 Reminder: Consider updating context-progress branch"
+        echo "   git checkout context-progress"
+        echo "   git rebase master"
+        echo "   git commit --amend  # Update progress checklist"
+        echo "   git checkout master"
+        echo ""
+    fi
+fi
+
+exit 0

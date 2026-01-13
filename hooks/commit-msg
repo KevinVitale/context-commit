@@ -1,0 +1,23 @@
+#!/bin/bash
+# [CONTEXT] commit-msg hook
+# Validates [CONTEXT] commits are properly formatted
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Check if this is a [CONTEXT] commit
+if [[ "$COMMIT_MSG" =~ ^\[CONTEXT\] ]]; then
+    # Ensure [CONTEXT] commits have substantial content
+    LINE_COUNT=$(echo "$COMMIT_MSG" | wc -l)
+    if [ "$LINE_COUNT" -lt 5 ]; then
+        echo ""
+        echo "❌ [CONTEXT] commits must contain detailed information"
+        echo "   Current commit has only $LINE_COUNT lines"
+        echo "   Add more context to explain the purpose and details."
+        echo ""
+        exit 1
+    fi
+    echo "✅ [CONTEXT] commit format validated"
+fi
+
+exit 0

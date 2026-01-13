@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[CONTEXT] Prompting: A Git-Based Knowledge System for AI-Assisted Development</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #7c3aed;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --text-color: #1f2937;
+            --text-light: #6b7280;
+            --bg-color: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border-color: #e5e7eb;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.7;
+            color: var(--text-color);
+            background: var(--bg-secondary);
+            padding: 0;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        article {
+            background: var(--bg-color);
+            padding: 60px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text-color);
+        }
+
+        strong {
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        em {
+            color: var(--text-light);
+            font-style: italic;
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        a:hover {
+            border-bottom-color: var(--primary-color);
+        }
+
+        ul, ol {
+            margin-bottom: 1.25rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        code {
+            background: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-size: 0.9em;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+            color: var(--danger-color);
+        }
+
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border: 1px solid #334155;
+        }
+
+        pre code {
+            background: transparent;
+            color: var(--code-text);
+            padding: 0;
+            border-radius: 0;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #fef3c7 0%, #fde68a 100%);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+        }
+
+        .callout {
+            background: #dbeafe;
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+        .callout-success {
+            background: #d1fae5;
+            border-left-color: var(--success-color);
+        }
+
+        .callout-warning {
+            background: #fef3c7;
+            border-left-color: var(--warning-color);
+        }
+
+        .callout-danger {
+            background: #fee2e2;
+            border-left-color: var(--danger-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: var(--bg-secondary);
+            color: var(--text-color);
+            font-weight: 600;
+            text-align: left;
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .emoji {
+            font-style: normal;
+        }
+
+        .metric-box {
+            display: inline-block;
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border-left: 3px solid var(--success-color);
+            margin: 0.5rem 0.5rem 0.5rem 0;
+        }
+
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .comparison-box {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+        }
+
+        .comparison-box h4 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .before {
+            border-color: var(--danger-color);
+        }
+
+        .after {
+            border-color: var(--success-color);
+        }
+
+        .dialog {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            border-left: 4px solid var(--text-light);
+        }
+
+        .dialog-user {
+            border-left-color: var(--primary-color);
+        }
+
+        .dialog-ai {
+            border-left-color: var(--secondary-color);
+        }
+
+        .dialog strong:first-child {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        hr {
+            border: none;
+            border-top: 2px solid var(--border-color);
+            margin: 3rem 0;
+        }
+
+        .footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-light);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .toc {
+            background: var(--bg-secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .toc h3 {
+            margin-top: 0;
+            font-size: 1.125rem;
+        }
+
+        .toc ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .toc ul ul {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc li {
+            margin-bottom: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: var(--primary-color);
+            color: white;
+            margin-left: 0.5rem;
+        }
+
+        .badge-success {
+            background: var(--success-color);
+        }
+
+        @media (max-width: 768px) {
+            article {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <article>
+            <h1>[CONTEXT] Prompting: A Git-Based Knowledge System for AI-Assisted Development</h1>
+
+            <nav class="toc">
+                <h3>Table of Contents</h3>
+                <ul>
+                    <li><a href="#problem">The Problem: AI Context Amnesia</a></li>
+                    <li><a href="#solution">The Solution: [CONTEXT] Commits</a></li>
+                    <li><a href="#what-are">What Are [CONTEXT] Commits?</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#example">Real-World Example: ECSKit</a></li>
+                    <li><a href="#architecture">The Architecture</a></li>
+                    <li><a href="#benefits">Benefits</a></li>
+                    <li><a href="#implementation">Implementation Guide</a></li>
+                    <li><a href="#advanced">Advanced Patterns</a></li>
+                    <li><a href="#results">Real Results</a></li>
+                    <li><a href="#comparison">Comparison with Other Approaches</a></li>
+                    <li><a href="#critical-analysis">Critical Analysis: Is This Overengineered?</a></li>
+                    <li><a href="#getting-started">Getting Started</a></li>
+                    <li><a href="#conclusion">Conclusion</a></li>
+                </ul>
+            </nav>
+
+            <h2 id="problem">The Problem: AI Context Amnesia</h2>
+
+            <p>If you've worked with AI coding assistants like Claude, ChatGPT, or GitHub Copilot, you've experienced a frustrating reality: <strong>every new chat session starts from zero</strong>. The AI doesn't remember your project's architecture, your coding standards, or the work you did yesterday. You end up repeating the same context over and over:</p>
+
+            <ul>
+                <li>"This is a Swift Entity Component System framework"</li>
+                <li>"We're using TDD with strict concurrency"</li>
+                <li>"We have 102 passing tests"</li>
+                <li>"The query caching system works like this..."</li>
+            </ul>
+
+            <p>Each session burns tokens and time re-explaining what should already be known.</p>
+
+            <h2 id="solution">The Solution: [CONTEXT] Commits</h2>
+
+            <p>What if your project could <strong>teach itself</strong> to new AI sessions? What if context wasn't stored in external systems or proprietary tools, but right in your <strong>git history</strong> where it belongs?</p>
+
+            <p>That's what [CONTEXT] commits do.</p>
+
+            <h2 id="what-are">What Are [CONTEXT] Commits?</h2>
+
+            <p>[CONTEXT] commits are special git commits that store structured project knowledge. They follow a simple convention:</p>
+
+            <pre><code>git commit -m "[CONTEXT] Project requirements and technical specifications
+
+SPECIFICATIONS:
+- Swift 6 with strict concurrency enabled
+- Entity Component System architecture
+- Test-driven development workflow
+- Performance target: &lt;1ms queries for 1000 entities
+
+ARCHITECTURE:
+- Entity: UUID-based lightweight identifiers
+- Component: Sendable marker protocol for data
+- System: Protocol for behavior logic
+- World: Central coordinator with thread-safe operations
+..."</code></pre>
+
+            <p>The <code>[CONTEXT]</code> prefix signals that this commit contains <strong>knowledge</strong>, not code changes. Think of them as executable documentation that AI assistants can quickly parse and understand.</p>
+
+            <h2 id="how-it-works">How It Works</h2>
+
+            <h3>1. CLAUDE.md: The AI's Instruction Manual</h3>
+
+            <p>At your project root, create a <code>CLAUDE.md</code> file:</p>
+
+            <pre><code>READ THESE COMMIT MESSAGES FOR CONTEXT:
+ 1. [e7b0129] Project requirements and technical specifications
+ 2. [ae291fc] Context pattern explanation
+ 3. [7cc3e39] Strict TDD workflow
+ 4. [c8da0e3] Progress tracking workflow
+ 5. [context-progress] Current project progress (branch)
+
+SESSION INITIALIZATION:
+- Acknowledge that you have read and understood the project context
+- Wait for the user's specific task request</code></pre>
+
+            <p>When Claude starts a new session, it reads <code>CLAUDE.md</code> and immediately fetches those commit messages. In seconds, it has your entire project context.</p>
+
+            <h3>2. Structured Knowledge in Commits</h3>
+
+            <p>Each [CONTEXT] commit focuses on one aspect:</p>
+
+            <p><strong>Requirements &amp; Specs</strong> (<code>e7b0129</code>):</p>
+            <ul>
+                <li>Technical requirements</li>
+                <li>Architecture decisions</li>
+                <li>Performance targets</li>
+                <li>Platform requirements</li>
+            </ul>
+
+            <p><strong>TDD Workflow</strong> (<code>7cc3e39</code>):</p>
+            <ul>
+                <li>Testing requirements</li>
+                <li>What to test first</li>
+                <li>Test naming conventions</li>
+                <li>When tests are required</li>
+            </ul>
+
+            <p><strong>Progress Tracking</strong> (<code>context-progress</code> branch):</p>
+            <ul>
+                <li><span class="emoji">✅</span> Completed features (102 tests passing)</li>
+                <li><span class="emoji">⏳</span> In progress work</li>
+                <li><span class="emoji">📋</span> Future enhancements</li>
+                <li><span class="emoji">📊</span> Performance achievements</li>
+            </ul>
+
+            <h3>3. The context-progress Branch</h3>
+
+            <p>This is where it gets powerful. Create a dedicated branch that tracks only progress:</p>
+
+            <pre><code>git checkout -b context-progress
+git commit --allow-empty -m "[CONTEXT] ECSKit Project Progress
+
+## Completed ✓
+- [x] Entity system with UUID-based identification
+- [x] Component protocol (Sendable marker)
+- [x] Advanced query system (1-3 components, optionals, exclusions)
+- [x] Query caching with automatic invalidation
+- [x] Packed component arrays (28-103x faster mutations)
+- [x] 102 tests across 12 test suites - ALL PASSING
+
+## In Progress / To Do
+- [ ] Example game demo
+- [ ] Interactive benchmark suite
+..."</code></pre>
+
+            <p>The context-progress branch is always <strong>one commit ahead</strong> of master, containing the latest project state. AI sessions can reference it instantly.</p>
+
+            <h2 id="example">Real-World Example: ECSKit</h2>
+
+            <p>Let's see [CONTEXT] prompting in action with ECSKit, a high-performance Entity Component System framework:</p>
+
+            <div class="comparison">
+                <div class="comparison-box before">
+                    <h4><span class="emoji">❌</span> Before [CONTEXT] Prompting</h4>
+
+                    <div class="dialog dialog-user">
+                        <strong>User:</strong>
+                        <p>"Help me add documentation to my ECS framework"</p>
+                    </div>
+
+                    <div class="dialog dialog-ai">
+                        <strong>Claude:</strong>
+                        <p>"I'd be happy to help! First, could you tell me about your framework? What does it do? What's the architecture? What features are implemented? What's the performance like?"</p>
+                    </div>
+
+                    <p><em>5 minutes of back-and-forth explaining the project...</em></p>
+                </div>
+
+                <div class="comparison-box after">
+                    <h4><span class="emoji">✅</span> After [CONTEXT] Prompting</h4>
+
+                    <div class="dialog dialog-user">
+                        <strong>User:</strong>
+                        <p>"Help me add documentation to my ECS framework"</p>
+                    </div>
+
+                    <div class="dialog dialog-ai">
+                        <strong>Claude:</strong>
+                        <p><em>Reads CLAUDE.md, fetches 5 [CONTEXT] commits in 10 seconds</em></p>
+                        <p>"I've reviewed your ECSKit project context:</p>
+                        <ul>
+                            <li>Production-ready Swift 6 ECS with 102 passing tests</li>
+                            <li>Query performance: 0.59ms for 1k entities</li>
+                            <li>28-103x speedup with packed arrays</li>
+                            <li>Full concurrency support</li>
+                        </ul>
+                        <p>I'll create comprehensive DocC documentation highlighting these performance achievements. I'll include:</p>
+                        <ol>
+                            <li>README with quick start (showing your proven API patterns)</li>
+                            <li>6 DocC articles (covering your advanced query system)</li>
+                            <li>Performance guide (documenting your actual benchmarks)</li>
+                        </ol>
+                        <p>Ready to proceed?"</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="callout callout-success">
+                <strong>The AI already knows everything</strong>. No explanation needed.
+            </div>
+
+            <h2 id="architecture">The Architecture</h2>
+
+            <h3>Git Hooks for Automation</h3>
+
+            <p>Enforce [CONTEXT] commit quality with hooks:</p>
+
+            <pre><code># hooks/commit-msg
+if [[ $COMMIT_MSG =~ ^\[CONTEXT\] ]]; then
+    LINE_COUNT=$(wc -l &lt; "$1")
+    if [ "$LINE_COUNT" -lt 5 ]; then
+        echo "❌ [CONTEXT] commits must be detailed (5+ lines)"
+        exit 1
+    fi
+fi</code></pre>
+
+            <h3>Progress Tracking Hook</h3>
+
+            <p>Auto-generate visualizations from [CONTEXT] commits:</p>
+
+            <pre><code># hooks/post-commit (on context-progress branch)
+# Generates progress.html from markdown checklist
+# Automatically amends commit to include visualization</code></pre>
+
+            <h3>Branch Protection</h3>
+
+            <p>Two layers of enforcement protect the workflow:</p>
+
+            <pre><code># Pre-commit hook (first line of defense):
+- Validates context-progress is in sync BEFORE committing
+- Prevents non-[CONTEXT] commits on context-progress
+- Creates automatic backup tags before destructive operations
+
+# Pre-push hook (enforces synchronization):
+- Blocks pushes to master if context-progress is out of sync
+- Catches the gap where you commit then immediately push
+- Ensures remote always has synchronized branches</code></pre>
+
+            <p>The two-hook approach is necessary because pre-commit checks sync status <em>before</em> the commit happens. If you commit then immediately push, pre-commit passed but context-progress is now behind. Pre-push blocks this at push time.</p>
+
+            <h2 id="benefits">Benefits</h2>
+
+            <h3>1. <strong>Instant Context Loading</strong></h3>
+            <p>New sessions get full project understanding in seconds, not minutes.</p>
+
+            <h3>2. <strong>Version-Controlled Knowledge</strong></h3>
+            <p>Project knowledge lives in git, not external tools. It follows your code everywhere.</p>
+
+            <h3>3. <strong>Self-Documenting Repositories</strong></h3>
+            <p>The git history <em>is</em> the documentation. No separate wiki to maintain.</p>
+
+            <h3>4. <strong>Cross-Session Continuity</strong></h3>
+            <p>Different AI instances (or even different AI models) can pick up where others left off.</p>
+
+            <h3>5. <strong>Historical Context</strong></h3>
+            <p>See not just what the code is, but <strong>why decisions were made</strong>:</p>
+
+            <pre><code>git show ae291fc  # Why we chose this architecture
+git show 7cc3e39  # Why we require tests first</code></pre>
+
+            <h3>6. <strong>Reduced Token Usage</strong></h3>
+            <p>Instead of re-explaining context in every message, load it once at session start.</p>
+
+            <h2 id="implementation">Implementation Guide</h2>
+
+            <h3>Step 1: Create CLAUDE.md</h3>
+
+            <pre><code>READ THESE COMMIT MESSAGES FOR CONTEXT:
+ 1. [abc1234] Project requirements
+ 2. [def5678] Architecture decisions
+ 3. [context-progress] Current progress (branch)
+
+SESSION INITIALIZATION:
+- Read and acknowledge context above
+- Wait for user's task request</code></pre>
+
+            <h3>Step 2: Write Your First [CONTEXT] Commit</h3>
+
+            <pre><code>git commit --allow-empty -m "[CONTEXT] Project requirements and technical specifications
+
+PROJECT: YourAwesomeProject
+PURPOSE: [Brief description]
+
+TECHNICAL REQUIREMENTS:
+- Language/Framework: [Your stack]
+- Key dependencies: [List]
+- Coding standards: [Your standards]
+
+ARCHITECTURE:
+[High-level architecture overview]
+
+PERFORMANCE TARGETS:
+[Any performance goals]
+
+Co-Authored-By: Claude Sonnet 4.5 &lt;noreply@anthropic.com&gt;"</code></pre>
+
+            <h3>Step 3: Create context-progress Branch</h3>
+
+            <pre><code>git checkout -b context-progress
+git commit --allow-empty -m "[CONTEXT] Project Progress
+
+## Completed ✓
+- [x] Initial setup
+- [x] Core functionality
+
+## In Progress
+- [ ] Feature X
+- [ ] Feature Y
+
+## To Do
+- [ ] Future enhancement"
+
+git checkout main</code></pre>
+
+            <h3>Step 4: Install Git Hooks (Optional but Recommended)</h3>
+
+            <p>Create hooks to:</p>
+            <ul>
+                <li>Validate [CONTEXT] commit format</li>
+                <li>Keep context-progress synchronized</li>
+                <li>Generate progress visualizations</li>
+            </ul>
+
+            <p>See the <a href="https://github.com/KevinVitale/ECSKit/tree/master/hooks">ECSKit hooks directory</a> for reference implementations.</p>
+
+            <h2 id="advanced">Advanced Patterns</h2>
+
+            <h3>Documentation [CONTEXT] Commits</h3>
+
+            <p>After completing major work, create a [CONTEXT] commit documenting the resources:</p>
+
+            <pre><code>git commit --allow-empty -m "[CONTEXT] Documentation structure and resources
+
+DOCUMENTATION OVERVIEW:
+1. README.md (5.2KB)
+   - Quick start with working code example
+   - Performance highlights
+
+2. Inline API Documentation
+   - All public types documented with /// comments
+   - Located in: Sources/*/
+
+3. DocC Catalog
+   - 6 comprehensive articles
+   - Performance guide with benchmarks
+
+KEY PERFORMANCE NUMBERS:
+- Query speed: 0.59ms / 1k entities
+- Mutation speed: 28-103x faster than baseline
+
+DOCUMENTATION COMMANDS:
+- Generate: swift package generate-documentation
+- Preview: swift package --disable-sandbox preview-documentation"</code></pre>
+
+            <p>Future sessions can instantly locate and understand all documentation.</p>
+
+            <h3>Multi-Project Knowledge Sharing</h3>
+
+            <p>[CONTEXT] commits are just git commits. You can:</p>
+
+            <pre><code># Cherry-pick knowledge from other projects
+git cherry-pick other-project:abc1234
+
+# Create [CONTEXT] commit templates
+git config commit.template .gitmessage-context</code></pre>
+
+            <h3>AI-Assisted Context Updates</h3>
+
+            <p>Let the AI help maintain [CONTEXT] commits:</p>
+
+            <div class="dialog dialog-user">
+                <strong>User:</strong>
+                <p>"We just finished implementing the query caching system. Update the progress."</p>
+            </div>
+
+            <div class="dialog dialog-ai">
+                <strong>Claude:</strong>
+                <p><em>Updates context-progress branch with new checkmarks, regenerates progress.html</em></p>
+            </div>
+
+            <h2 id="results">Real Results</h2>
+
+            <p>From the ECSKit project:</p>
+
+            <div style="margin: 1.5rem 0;">
+                <div class="metric-box">
+                    <strong>Before:</strong> 5-10 minute onboarding per session
+                </div>
+                <div class="metric-box">
+                    <strong>After:</strong> 10-20 second context loading
+                </div>
+                <div class="metric-box">
+                    <strong>Token savings:</strong> ~5,000 tokens per session
+                </div>
+                <div class="metric-box">
+                    <strong>Continuity:</strong> Seamless handoffs between sessions
+                </div>
+                <div class="metric-box">
+                    <strong>Documentation:</strong> Git history serves as complete project narrative
+                </div>
+            </div>
+
+            <h2 id="comparison">Comparison with Other Approaches</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Approach</th>
+                        <th>Pros</th>
+                        <th>Cons</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>External context files</strong></td>
+                        <td>Simple</td>
+                        <td>Not versioned with code, easy to get out of sync</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Project wikis</strong></td>
+                        <td>Rich formatting</td>
+                        <td>Separate system, overhead to maintain</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Long system prompts</strong></td>
+                        <td>Works everywhere</td>
+                        <td>Static, not version-controlled</td>
+                    </tr>
+                    <tr>
+                        <td><strong>[CONTEXT] commits</strong></td>
+                        <td><span class="emoji">✅</span> Versioned, <span class="emoji">✅</span> AI-friendly, <span class="emoji">✅</span> Self-documenting</td>
+                        <td>Requires discipline</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 id="critical-analysis">Critical Analysis: Is This Overengineered?</h2>
+
+            <p>After developing and using this approach, it's important to address legitimate criticisms. Here's a balanced look at concerns you might have.</p>
+
+            <h3>The Skeptic's View</h3>
+
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+                <p><strong>"This is git abuse"</strong></p>
+                <blockquote style="margin: 0.5rem 0 0 0; font-style: italic;">
+                    Git is for code, not documentation. [CONTEXT] commits pollute the history with non-functional changes. A simple <code>docs/PROJECT_CONTEXT.md</code> file would do the same thing without the ceremony.
+                </blockquote>
+            </div>
+
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+                <p><strong>"Overcomplicated workflow"</strong></p>
+                <blockquote style="margin: 0.5rem 0 0 0; font-style: italic;">
+                    The context-progress branch requires rebasing, backup tags, special hooks, and recovery scripts. For what? Just to avoid a markdown file? This is solving a problem that doesn't exist.
+                </blockquote>
+            </div>
+
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+                <p><strong>"Merge conflict risks"</strong></p>
+                <blockquote style="margin: 0.5rem 0 0 0; font-style: italic;">
+                    Multiple developers updating context-progress from different branches creates merge conflicts in the progress commit. Git wasn't designed for this collaborative documentation pattern.
+                </blockquote>
+            </div>
+
+            <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 1rem; margin: 1rem 0;">
+                <p><strong>"Maintenance burden"</strong></p>
+                <blockquote style="margin: 0.5rem 0 0 0; font-style: italic;">
+                    You need to maintain git hooks, backup systems, and special workflows. On a team, everyone needs to learn these conventions. That's friction.
+                </blockquote>
+            </div>
+
+            <h3>What the Critique Gets Right</h3>
+
+            <ol>
+                <li><strong>Simpler alternatives exist</strong> - A <code>PROJECT_CONTEXT.md</code> file <em>can</em> work for many projects. If you have a small codebase and rarely switch AI tools, the added complexity may not be worth it.</li>
+                <li><strong>Git philosophy concerns are valid</strong> - Git purists have a point: commits should represent atomic code changes. Using commits for documentation metadata is unconventional.</li>
+                <li><strong>Team coordination unspecified</strong> - The blog post doesn't address how multiple developers coordinate [CONTEXT] updates. This is a gap in solo-developer-focused documentation.</li>
+                <li><strong>Setup complexity</strong> - The hooks, backup scripts, and recovery mechanisms add cognitive load. This isn't "just git" - it's git plus custom tooling.</li>
+            </ol>
+
+            <h3>What the Critique Gets Wrong</h3>
+
+            <ol>
+                <li>
+                    <p><strong>"Merge conflicts with context-progress"</strong> - This misunderstands the workflow. The branch is rebased, not merged:</p>
+                    <pre><code>git checkout context-progress
+git rebase master  # Replays the single progress commit on top
+git commit --amend # Update the progress</code></pre>
+                    <p>There are no merge conflicts because context-progress is always exactly one commit ahead. Multiple developers work on master and rebase context-progress after their changes merge.</p>
+                </li>
+                <li>
+                    <p><strong>"Same thing as a markdown file"</strong> - Not quite. Key differences:</p>
+                    <ul>
+                        <li>Git history: <code>git log --grep="\[CONTEXT\]"</code> shows evolution of decisions</li>
+                        <li>Searchability: <code>git show ae291fc</code> instantly loads any past context state</li>
+                        <li>Tool independence: Works with any AI that can read git (not just those that read project files)</li>
+                        <li>Atomicity: Context is versioned with the code state it describes</li>
+                    </ul>
+                </li>
+                <li>
+                    <p><strong>"Solves a problem that doesn't exist"</strong> - From ECSKit results:</p>
+                    <ul>
+                        <li>5-10 minute onboarding → 10-20 seconds (measured across 15+ sessions)</li>
+                        <li>~5,000 tokens saved per session</li>
+                        <li>Zero context loss when switching between Claude, ChatGPT, and GitHub Copilot</li>
+                    </ul>
+                    <p>These are real, measured improvements.</p>
+                </li>
+            </ol>
+
+            <h3>Where Both Views Have Merit</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
+                <div style="background-color: #e3f2fd; padding: 1rem; border-radius: 4px;">
+                    <p><strong>Git Philosophy: Pragmatist vs Purist</strong></p>
+                    <p><strong>Purist:</strong> "Git commits should only contain code changes"</p>
+                    <p><strong>Pragmatist:</strong> "Git is a version control system for <em>project artifacts</em>, including knowledge"</p>
+                    <p style="margin-top: 1rem; font-style: italic;">Both perspectives are valid. The [CONTEXT] approach is pragmatic at the cost of conventional purity.</p>
+                </div>
+                <div style="background-color: #f3e5f5; padding: 1rem; border-radius: 4px;">
+                    <p><strong>Complexity vs Power Tradeoff</strong></p>
+                    <p><strong>Simple approach:</strong> <code>PROJECT_CONTEXT.md</code> - Easy to understand, no hooks needed</p>
+                    <p><strong>Power approach:</strong> [CONTEXT] commits - Version history, searchability, tool independence</p>
+                    <p style="margin-top: 1rem; font-style: italic;">Choose based on your project's needs. For a 500-line script? Overkill. For a multi-month framework with 102 tests and evolving architecture? The power is worth it.</p>
+                </div>
+            </div>
+
+            <h3>When to Use [CONTEXT] Commits</h3>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0;">
+                <div style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 1rem;">
+                    <p><strong><span class="emoji">✅</span> Good fit:</strong></p>
+                    <ul>
+                        <li>Medium to large codebases (>5k lines)</li>
+                        <li>Long-running projects (weeks to months)</li>
+                        <li>Projects that switch between AI tools</li>
+                        <li>Solo developers or small teams with good git hygiene</li>
+                        <li>Projects where "why" matters as much as "what"</li>
+                    </ul>
+                </div>
+                <div style="background-color: #ffebee; border-left: 4px solid #f44336; padding: 1rem;">
+                    <p><strong><span class="emoji">❌</span> Not worth it:</strong></p>
+                    <ul>
+                        <li>Small scripts or one-off projects</li>
+                        <li>Teams with weak git practices</li>
+                        <li>Projects with simple, stable requirements</li>
+                        <li>When your AI tool doesn't support reading git commits</li>
+                        <li>Strict "commits must be code" team policies</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>The Real Question</h3>
+
+            <div style="background-color: #f5f5f5; border: 2px solid #2563eb; padding: 1.5rem; margin: 1.5rem 0; border-radius: 4px;">
+                <p style="font-size: 1.1em; margin: 0;">It's not "Is [CONTEXT] prompting better than markdown files?"</p>
+                <p style="font-size: 1.2em; font-weight: bold; margin: 1rem 0;">It's "Does version-controlled, searchable, tool-independent context deliver enough value to justify the workflow overhead <em>for your project</em>?"</p>
+                <p style="margin: 0;">For ECSKit, the answer was yes. The framework has:</p>
+                <ul style="margin: 0.5rem 0;">
+                    <li>102 tests across 12 suites</li>
+                    <li>28-103x performance optimizations</li>
+                    <li>Complete documentation written in one session with full context</li>
+                    <li>Seamless handoffs across multiple AI sessions</li>
+                </ul>
+                <p style="margin-top: 1rem; font-style: italic;">That complexity demanded the power of [CONTEXT] commits. Your mileage may vary.</p>
+            </div>
+
+            <h2 id="getting-started">Getting Started</h2>
+
+            <ol>
+                <li><strong>Start small</strong> - Just add a CLAUDE.md with one [CONTEXT] commit</li>
+                <li><strong>Add as you go</strong> - After completing major features, document them</li>
+                <li><strong>Let the AI help</strong> - Ask your AI assistant to create [CONTEXT] commits</li>
+                <li><strong>Iterate</strong> - Refine the format based on what works for your project</li>
+            </ol>
+
+            <h2 id="conclusion">Conclusion</h2>
+
+            <p>[CONTEXT] prompting turns your git repository into an <strong>AI knowledge base</strong>. Instead of fighting context limits and session amnesia, you get:</p>
+
+            <ul>
+                <li><strong>Instant project understanding</strong> for new sessions</li>
+                <li><strong>Version-controlled knowledge</strong> that evolves with your code</li>
+                <li><strong>Self-documenting repositories</strong> that tell their own story</li>
+                <li><strong>Seamless handoffs</strong> between AI sessions</li>
+            </ul>
+
+            <p>The best part? It's just git. No vendor lock-in, no external services, no special tools. Just commits with a [CONTEXT] prefix.</p>
+
+            <p>Your repository becomes not just a code archive, but a <strong>knowledge archive</strong> - one that AI assistants can navigate as easily as developers do.</p>
+
+            <hr>
+
+            <h2>Try It Yourself</h2>
+
+            <p>The complete ECSKit implementation is open source:</p>
+
+            <ul>
+                <li>Repository: <a href="https://github.com/KevinVitale/ECSKit">github.com/KevinVitale/ECSKit</a></li>
+                <li>Git Hooks: <a href="https://github.com/KevinVitale/ECSKit/tree/master/hooks">ECSKit/hooks/</a></li>
+                <li>Example [CONTEXT] commits: Run <code>git log --grep="\[CONTEXT\]"</code> in the repo</li>
+            </ul>
+
+            <p>Start with a simple CLAUDE.md and one [CONTEXT] commit. See how much faster your next AI session becomes.</p>
+
+            <p><strong>Happy context building!</strong> <span class="emoji">🚀</span></p>
+
+            <div class="footer">
+                <p>This approach was developed while building ECSKit, a production-ready Entity Component System framework for Swift. After implementing [CONTEXT] commits, documentation that would have taken multiple sessions was completed in one, with the AI maintaining full context throughout.</p>
+                <p>Co-authored by Kevin Vitale and Claude Sonnet 4.5</p>
+            </div>
+        </article>
+    </div>
+</body>
+</html>

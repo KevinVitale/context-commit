@@ -1,0 +1,37 @@
+#!/bin/bash
+# [CONTEXT] pre-push hook
+# Enforces context-progress synchronization before pushing
+
+# Read from stdin: <local ref> <local sha1> <remote ref> <remote sha1>
+while read local_ref local_sha remote_ref remote_sha; do
+    # Only check when pushing to master
+    if [[ "$local_ref" == "refs/heads/master" ]]; then
+        # Check if context-progress branch exists
+        if git rev-parse --verify context-progress >/dev/null 2>&1; then
+            # Count commits in master that aren't in context-progress
+            BEHIND=$(git rev-list context-progress..master --count 2>/dev/null)
+
+            if [ "$BEHIND" -gt 0 ]; then
+                echo ""
+                echo "❌ Cannot push to master: context-progress branch is out of sync"
+                echo "   context-progress is behind master by $BEHIND commit(s)"
+                echo ""
+                echo "   Update context-progress before pushing:"
+                echo ""
+                echo "   git checkout context-progress"
+                echo "   git rebase master"
+                echo "   git commit --amend  # Update progress checklist"
+                echo "   git checkout master"
+                echo "   git push origin context-progress --force"
+                echo "   git push  # Now you can push master"
+                echo ""
+                exit 1
+            fi
+            echo "✅ context-progress is synchronized with master"
+        else
+            echo "⚠️  context-progress branch does not exist"
+        fi
+    fi
+done
+
+exit 0
