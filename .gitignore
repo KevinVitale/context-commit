@@ -11,3 +11,6 @@ Thumbs.db
 
 # Test artifacts
 *.log
+
+# Draft content
+docs/*posts.md
