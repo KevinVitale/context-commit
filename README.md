@@ -250,8 +250,7 @@ MIT License
 ## Support
 
 - GitHub Issues: Report bugs or request features
-- Documentation: `hooks/README.md` and `templates/`
-- Examples: See `examples/` directory
+- Documentation: `hooks/README.md`
 
 ---
 
