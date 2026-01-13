@@ -22,7 +22,7 @@ Store requirements, workflows, and progress in git commits. No external docs. No
 # Claude: "Initialize context workflow"
 
 # 3. Install hooks for automatic session capture
-~/.claude/plugins/context-commit/hooks/install-hooks.sh
+~/.claude/plugins/marketplaces/context-commit-marketplace/hooks/install-hooks.sh
 
 # Done. Work normally - context is captured automatically.
 ```
